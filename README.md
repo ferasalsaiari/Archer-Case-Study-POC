@@ -194,10 +194,3 @@ This prototype demonstrates core concepts. Production-ready enhancements could i
 - Mobile-responsive design
 - Export routes to GPS devices
 
-## License
-
-This is a proof-of-concept demonstration project.
-
-## Contact
-
-For questions or feedback about this prototype, please contact the development team.
