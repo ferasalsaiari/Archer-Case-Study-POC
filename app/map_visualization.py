@@ -35,56 +35,66 @@ def create_route_map(route, charging_stops):
             tiles='CartoDB positron'
         )
         
-        # Draw route polyline with modern styling (darker, thicker)
+        # Draw route polyline with modern styling
         route_coords = [geo_coordinates[city] for city in route]
         folium.PolyLine(
             locations=route_coords,
-            color='#2563eb',  # Modern blue
+            color='#2563eb',
             weight=4,
             opacity=0.8
         ).add_to(route_map)
         
-        # Add modern circle markers for each city
+        # Add emoji-based markers for each city
         for i, city in enumerate(route):
             lat, lon = geo_coordinates[city]
             
-            # Modern color scheme and styling
+            # Determine emoji and styling based on city type
             if i == 0:
-                # Start city - green with larger radius
-                color = '#10b981'  # Modern green
-                fill_color = '#10b981'
-                radius = 12
-                popup_text = f"<b>🚀 START</b><br>{city}"
+                # Start city
+                emoji = "&#128205;"  # 📍 Round Pushpin
+                bg_color = "#10b981"
+                popup_text = f"<b>START</b><br>{city}"
             elif i == len(route) - 1:
-                # Destination city - red with larger radius
-                color = '#ef4444'  # Modern red
-                fill_color = '#ef4444'
-                radius = 12
-                popup_text = f"<b>🎯 DESTINATION</b><br>{city}"
+                # Destination city
+                emoji = "&#127937;"  # 🏁 Checkered Flag
+                bg_color = "#ef4444"
+                popup_text = f"<b>DESTINATION</b><br>{city}"
             elif city in charging_stops:
-                # Charging station - electric blue
-                color = '#f59e0b'  # Modern amber/orange
-                fill_color = '#f59e0b'
-                radius = 10
-                popup_text = f"<b>⚡ CHARGING</b><br>{city}"
+                # Charging station
+                emoji = "&#9889;"  # ⚡ Lightning Bolt
+                bg_color = "#f59e0b"
+                popup_text = f"<b>CHARGING</b><br>{city}"
             else:
-                # Regular waypoint - subtle gray
-                color = '#6b7280'  # Modern gray
-                fill_color = '#9ca3af'
-                radius = 8
-                popup_text = f"<b>📍</b> {city}"
+                # Regular waypoint
+                emoji = "&#128205;"  # 📍 Round Pushpin
+                bg_color = "#6b7280"
+                popup_text = city
             
-            # Add modern circle marker
-            folium.CircleMarker(
+            # Create custom HTML for emoji marker
+            icon_html = f"""
+                <div style="
+                    font-size: 24px;
+                    text-align: center;
+                    line-height: 1;
+                    background-color: {bg_color};
+                    border-radius: 50%;
+                    width: 36px;
+                    height: 36px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                ">
+                    {emoji}
+                </div>
+            """
+            
+            # Add marker with custom emoji icon
+            folium.Marker(
                 location=[lat, lon],
-                radius=radius,
                 popup=folium.Popup(popup_text, max_width=200),
                 tooltip=city,
-                color=color,
-                fill=True,
-                fillColor=fill_color,
-                fillOpacity=0.9,
-                weight=2
+                icon=folium.DivIcon(html=icon_html)
             ).add_to(route_map)
         
         return route_map

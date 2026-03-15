@@ -150,7 +150,7 @@ def main():
             route_map = create_route_map(route, battery_info['charging_stops'])
             
             if route_map:
-                st_folium(route_map, width=800, height=400, key="route_map")
+                st_folium(route_map, width=1000, height=500, key="route_map", returned_objects=[])
             else:
                 st.warning("⚠️ Could not generate map visualization")
         except Exception as map_error:
