@@ -23,8 +23,9 @@ The application follows a clean **three-tier architecture**:
 │     Presentation Layer              │
 │     (Streamlit UI)                  │
 │  - User inputs                      │
-│  - Route visualization              │
+│  - Interactive map display          │
 │  - Battery analysis display         │
+│  - Trip time summary                │
 └──────────────┬──────────────────────┘
                │
                ▼
@@ -40,12 +41,23 @@ The application follows a clean **three-tier architecture**:
 │  │  - Battery tracking         │   │
 │  │  - Charging stop detection  │   │
 │  └─────────────────────────────┘   │
+│  ┌─────────────────────────────┐   │
+│  │  Map Visualization          │   │
+│  │  - Folium map generation    │   │
+│  │  - Route polyline rendering │   │
+│  └─────────────────────────────┘   │
+│  ┌─────────────────────────────┐   │
+│  │  Trip Estimator             │   │
+│  │  - Time calculations        │   │
+│  │  - Logistics modeling       │   │
+│  └─────────────────────────────┘   │
 └──────────────┬──────────────────────┘
                │
                ▼
 ┌─────────────────────────────────────┐
 │     Data Layer                      │
-│  - City locations                   │
+│  - City locations (x,y coords)      │
+│  - Geographic coordinates (lat/lon) │
 │  - Charging station registry        │
 │  - Distance calculations            │
 └─────────────────────────────────────┘
@@ -86,10 +98,36 @@ The application follows a clean **three-tier architecture**:
 #### 4. Data Layer (`data.py`)
 - **Purpose**: Mock data and utility functions
 - **Responsibilities**:
-  - Provide city location data
+  - Provide city location data (simplified and geographic)
   - Maintain charging station registry
   - Calculate inter-city distances
-- **Data Model**: Simplified 2D coordinate system
+- **Data Model**: Dual coordinate system (simplified 2D for distance, lat/lon for maps)
+
+#### 5. Map Visualization (`map_visualization.py`)
+- **Purpose**: Interactive geospatial route display
+- **Responsibilities**:
+  - Generate Folium maps with route overlays
+  - Render city markers with appropriate icons
+  - Draw route polylines
+  - Highlight charging stations
+- **Technology**: Folium for interactive web maps
+- **Features**:
+  - Color-coded markers (green=start, red=destination, orange=charging)
+  - Clickable popups with city information
+  - Pan and zoom controls
+  - Route path visualization
+
+#### 6. Trip Estimator (`trip_estimator.py`)
+- **Purpose**: Logistics time modeling
+- **Responsibilities**:
+  - Calculate driving time based on distance
+  - Estimate charging time per stop
+  - Compute total trip duration
+  - Format time displays
+- **Assumptions**:
+  - Average speed: 60 mph
+  - Charging time: 30 minutes per stop
+  - No traffic or weather delays
 
 ## Tech Stack
 
@@ -124,6 +162,34 @@ The application follows a clean **three-tier architecture**:
 - Custom implementation: Unnecessary complexity
 - igraph: Less Pythonic API
 - graph-tool: Heavier dependency
+
+### Folium
+**Why Folium?**
+- Built on Leaflet.js for interactive maps
+- Python-native API for map generation
+- No JavaScript knowledge required
+- Seamless Streamlit integration via streamlit-folium
+- Rich marker and layer support
+
+**Key Features Used**:
+- PolyLine for route visualization
+- Marker icons with custom colors
+- Popup tooltips for city information
+- Automatic map centering and zoom
+
+### Pytest
+**Why Pytest?**
+- Industry-standard testing framework
+- Simple, readable test syntax
+- Excellent assertion introspection
+- Comprehensive test discovery
+- Easy integration with CI/CD
+
+**Test Coverage**:
+- Route planning logic
+- Battery simulation accuracy
+- Edge case handling
+- Graph construction validation
 
 ## Graph Model
 
@@ -338,6 +404,111 @@ The system handles several error conditions:
 ### 4. Invalid Inputs
 **Cause**: Same start and destination
 **Response**: Validation error with clear message
+
+## Testing Strategy
+
+The application includes comprehensive unit tests to ensure correctness and reliability.
+
+### Test Framework: Pytest
+
+**Location**: `tests/` directory
+**Execution**: `pytest tests/ -v`
+
+### Test Coverage
+
+#### Route Planning Tests (`test_routes.py`)
+
+**Graph Construction**:
+- `test_graph_respects_battery_range`: Validates edges only exist within battery range
+- `test_graph_with_large_battery_range`: Ensures all cities reachable with sufficient range
+- `test_graph_is_bidirectional`: Confirms edges work in both directions
+
+**Pathfinding**:
+- `test_route_exists_la_to_sf`: Verifies route computation for common scenarios
+- `test_no_route_with_insufficient_range`: Handles impossible routes gracefully
+- `test_route_optimality`: Confirms shortest path algorithm correctness
+
+**Distance Calculations**:
+- `test_route_distance_calculation`: Validates total distance computation
+- `test_empty_route`: Edge case handling
+- `test_single_city_route`: Single-node route handling
+
+#### Battery Simulation Tests (`test_charging.py`)
+
+**Charging Detection**:
+- `test_charging_stops_detected`: Ensures charging stops identified correctly
+- `test_no_charging_needed_short_route`: Validates when charging unnecessary
+- `test_multiple_charging_stops`: Tests routes requiring multiple charges
+
+**Battery Consumption**:
+- `test_battery_consumption_calculation`: Validates percentage calculations
+- `test_battery_recharge_to_full`: Confirms 100% recharge at stations
+- `test_battery_never_negative`: Ensures battery levels stay valid
+
+**Feasibility Validation**:
+- `test_infeasible_route_no_charging_station`: Detects impossible routes
+- `test_segment_too_long`: Identifies segments exceeding range
+- `test_sufficient_range_no_charging`: Validates optimal battery usage
+
+### Test Execution
+
+```bash
+# Run all tests
+pytest tests/ -v
+
+# Run with coverage
+pytest tests/ --cov=app --cov-report=html
+
+# Run specific test file
+pytest tests/test_routes.py -v
+
+# Run specific test
+pytest tests/test_routes.py::test_graph_respects_battery_range -v
+```
+
+### Expected Output
+
+```
+tests/test_routes.py::test_graph_respects_battery_range PASSED
+tests/test_routes.py::test_graph_with_large_battery_range PASSED
+tests/test_routes.py::test_route_exists_la_to_sf PASSED
+tests/test_routes.py::test_no_route_with_insufficient_range PASSED
+tests/test_routes.py::test_route_distance_calculation PASSED
+tests/test_routes.py::test_empty_route PASSED
+tests/test_routes.py::test_single_city_route PASSED
+tests/test_routes.py::test_graph_is_bidirectional PASSED
+tests/test_routes.py::test_route_optimality PASSED
+
+tests/test_charging.py::test_no_charging_needed_short_route PASSED
+tests/test_charging.py::test_charging_stops_detected PASSED
+tests/test_charging.py::test_battery_consumption_calculation PASSED
+tests/test_charging.py::test_infeasible_route_no_charging_station PASSED
+tests/test_charging.py::test_segment_too_long PASSED
+tests/test_charging.py::test_battery_recharge_to_full PASSED
+tests/test_charging.py::test_empty_route PASSED
+tests/test_charging.py::test_single_city_route PASSED
+tests/test_charging.py::test_battery_level_formatting PASSED
+tests/test_charging.py::test_multiple_charging_stops PASSED
+tests/test_charging.py::test_sufficient_range_no_charging PASSED
+tests/test_charging.py::test_battery_never_negative PASSED
+
+==================== 21 passed in 0.45s ====================
+```
+
+### Testing Philosophy
+
+**Unit Tests**: Focus on individual component correctness
+**Edge Cases**: Comprehensive coverage of boundary conditions
+**Regression Prevention**: Ensure changes don't break existing functionality
+**Documentation**: Tests serve as executable specifications
+
+### Continuous Integration
+
+For production deployment, integrate with CI/CD:
+- Run tests on every commit
+- Block merges if tests fail
+- Generate coverage reports
+- Automated deployment on passing tests
 
 ## Future Improvements
 

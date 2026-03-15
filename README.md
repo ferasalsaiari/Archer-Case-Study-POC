@@ -30,20 +30,36 @@ This application solves these challenges by:
 
 ### 📊 Battery Consumption Analysis
 - Segment-by-segment battery tracking
-- Visual battery level indicators
+- Visual progress bars for battery levels
+- Color-coded battery status indicators
 - Clear warnings for low battery situations
+
+### 🗺️ Interactive Map Visualization
+- Folium-powered interactive maps
+- Visual route display with polylines
+- Color-coded markers (green=start, red=destination, orange=charging)
+- Clickable city markers with details
+- Pan and zoom controls
+
+### ⏱️ Trip Time Estimation
+- Calculates total driving time (60 mph average)
+- Estimates charging time (30 min per stop)
+- Displays total trip duration
+- Formatted time breakdowns
 
 ### 🎯 Interactive UI
 - Easy-to-use Streamlit interface
 - Adjustable battery range slider (100-400 miles)
 - Real-time route computation
-- Detailed route visualization
+- Comprehensive trip summary metrics
 
 ## Tech Stack
 
 - **Python 3.10+**: Core language
 - **Streamlit**: Web UI framework
 - **NetworkX**: Graph algorithms and shortest path computation
+- **Folium**: Interactive map visualization
+- **Pytest**: Unit testing framework
 - **Mock Data**: Hardcoded city locations and charging stations (no external APIs)
 
 ## How to Run
@@ -71,6 +87,11 @@ streamlit run app/app.py
 ```
 
 The application will open in your default web browser at `http://localhost:8501`
+
+### 5. Run Tests (Optional)
+```bash
+pytest tests/ -v
+```
 
 ## Example Usage
 
@@ -127,11 +148,17 @@ Total Distance: 380.0 miles
 ev-truck-route-planner/
 ├── README.md                 # This file
 ├── requirements.txt          # Python dependencies
+├── .gitignore               # Git ignore rules
 ├── app/
 │   ├── app.py               # Streamlit UI application
 │   ├── route_planner.py     # Graph construction and pathfinding
 │   ├── charging.py          # Battery simulation logic
-│   └── data.py              # Mock city and charging station data
+│   ├── data.py              # Mock city and charging station data
+│   ├── map_visualization.py # Folium map generation
+│   └── trip_estimator.py    # Trip time calculations
+├── tests/
+│   ├── test_routes.py       # Route planning tests
+│   └── test_charging.py     # Battery simulation tests
 └── docs/
     └── architecture.md      # Technical architecture documentation
 ```
@@ -146,13 +173,40 @@ The prototype includes five cities along a California corridor:
 - **Modesto** (300, 0) - ⚡ Charging Available
 - **San Francisco** (380, 0)
 
-## Development
+## Testing
 
-### Running Tests
-Currently, this is a prototype without formal test coverage. For production use, add:
-- Unit tests for route planning logic
-- Integration tests for battery simulation
-- UI tests with Streamlit testing framework
+The project includes comprehensive unit tests for core functionality.
+
+### Run All Tests
+```bash
+pytest tests/ -v
+```
+
+### Run Specific Test Files
+```bash
+# Test route planning
+pytest tests/test_routes.py -v
+
+# Test battery simulation
+pytest tests/test_charging.py -v
+```
+
+### Example Test Output
+```
+tests/test_routes.py::test_graph_respects_battery_range PASSED
+tests/test_routes.py::test_route_exists_la_to_sf PASSED
+tests/test_charging.py::test_charging_stops_detected PASSED
+tests/test_charging.py::test_battery_consumption_calculation PASSED
+
+==================== 15 passed in 0.23s ====================
+```
+
+### Test Coverage
+- **Route Planning**: Graph construction, pathfinding, distance calculations
+- **Battery Simulation**: Charging detection, consumption tracking, feasibility validation
+- **Edge Cases**: Empty routes, insufficient range, single segments
+
+## Development
 
 ### Code Style
 The codebase follows:
@@ -160,6 +214,12 @@ The codebase follows:
 - Modular architecture with clear separation of concerns
 - Comprehensive docstrings for all functions
 - Type hints where appropriate
+
+### Adding New Features
+1. Implement feature in appropriate module
+2. Add unit tests in `tests/`
+3. Update documentation
+4. Run test suite to ensure no regressions
 
 ## Future Enhancements
 
