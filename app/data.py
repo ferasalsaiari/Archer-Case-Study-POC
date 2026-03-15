@@ -13,6 +13,15 @@ locations = {
     "San Francisco": (380, 0)
 }
 
+# Real geographic coordinates (latitude, longitude) for map visualization
+geo_coordinates = {
+    "Los Angeles": (34.0522, -118.2437),
+    "Bakersfield": (35.3733, -119.0187),
+    "Fresno": (36.7378, -119.7871),
+    "Modesto": (37.6391, -120.9969),
+    "San Francisco": (37.7749, -122.4194)
+}
+
 # Cities with charging stations available
 charging_stations = [
     "Bakersfield",
