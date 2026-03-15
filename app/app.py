@@ -78,11 +78,15 @@ def main():
             
             # Build range-constrained graph
             with st.spinner("🔧 Building route graph with battery constraints..."):
+                time.sleep(1.2)  # Dramatic pause
                 graph = build_graph(battery_range)
+                time.sleep(0.8)  # Additional processing feel
             
             # Find shortest path
             with st.spinner("🧠 Running advanced pathfinding algorithms..."):
+                time.sleep(1.5)  # Algorithmic computation feel
                 route = find_route(graph, start_city, end_city)
+                time.sleep(0.7)  # Path validation
             
             if route is None:
                 st.error(f"❌ No route found from {start_city} to {end_city} with battery range of {battery_range} miles.")
@@ -92,7 +96,9 @@ def main():
             
             # Simulate battery usage
             with st.spinner("⚡ Simulating battery consumption and charging requirements..."):
+                time.sleep(1.3)  # Battery simulation feel
                 battery_info = compute_battery_usage(route, battery_range)
+                time.sleep(0.6)  # Charging optimization
             
             # Check if route is feasible
             if not battery_info['feasible']:
@@ -147,7 +153,9 @@ def main():
         st.subheader("🗺️ Interactive Route Map")
         
         try:
-            route_map = create_route_map(route, battery_info['charging_stops'])
+            with st.spinner("🎨 Generating map visualization..."):
+                time.sleep(0.5)  # Brief pause for effect
+                route_map = create_route_map(route, battery_info['charging_stops'])
             
             if route_map:
                 st_folium(route_map, width=1000, height=500, key="route_map", returned_objects=[])

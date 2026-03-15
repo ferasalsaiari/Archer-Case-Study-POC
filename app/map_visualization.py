@@ -51,7 +51,7 @@ def create_route_map(route, charging_stops):
             # Determine emoji and styling based on city type
             if i == 0:
                 # Start city
-                emoji = "&#128205;"  # 📍 Round Pushpin
+                emoji = "&#128666;"  # 🚚 Semi Truck
                 bg_color = "#10b981"
                 popup_text = f"<b>START</b><br>{city}"
             elif i == len(route) - 1:
